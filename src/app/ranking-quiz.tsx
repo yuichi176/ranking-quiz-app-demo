@@ -26,7 +26,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, X, RefreshCw, Eye, Shuffle } from 'lucide-react';
@@ -147,7 +146,6 @@ export default function RankingQuizApp(props: Partial<RankingQuizProps>) {
   );
   const [revealed, setRevealed] = useState(false);
   const [checked, setChecked] = useState(false);
-  const [filter, setFilter] = useState('');
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, {
@@ -193,9 +191,6 @@ export default function RankingQuizApp(props: Partial<RankingQuizProps>) {
   function checkAnswer() {
     setChecked(true);
   }
-  const filtered = items.filter((it) =>
-    it.label.toLowerCase().includes(filter.toLowerCase())
-  );
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-background to-muted/30 py-10 px-4 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-3xl">
@@ -219,14 +214,6 @@ export default function RankingQuizApp(props: Partial<RankingQuizProps>) {
                 )}
                 {revealed && <Badge variant="outline">解答を表示中</Badge>}
               </div>
-              <div className="flex items-center gap-2">
-                <Input
-                  placeholder="フィルター (テキスト検索)"
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                  className="h-9 w-full sm:w-64"
-                />
-              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -241,7 +228,7 @@ export default function RankingQuizApp(props: Partial<RankingQuizProps>) {
               >
                 <div className="space-y-3">
                   <AnimatePresence initial={false}>
-                    {filtered.map((item, idx) => (
+                    {items.map((item) => (
                       <SortableItem
                         key={item.id}
                         id={item.id}
