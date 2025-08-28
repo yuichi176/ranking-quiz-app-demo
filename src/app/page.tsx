@@ -1,7 +1,11 @@
+import RankingQuizApp from '@/app/ranking-quiz';
+
 export default function Home() {
   return (
     <div>
-      <main>hello</main>
+      <main>
+        <RankingQuizApp />
+      </main>
     </div>
   );
 }
