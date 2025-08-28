@@ -100,18 +100,15 @@ export const RankingQuizCard = () => {
           </CardContent>
           <CardFooter className="flex flex-col sm:flex-row gap-3 justify-end">
             <div className="flex gap-2">
-              <Button onClick={checkAnswer} className="rounded-2xl">
+              <Button
+                onClick={checkAnswer}
+                className="rounded-2xl cursor-pointer"
+              >
                 <Check className="w-4 h-4" /> 送信
               </Button>
             </div>
           </CardFooter>
         </Card>
-        <div className="mt-6 text-xs text-muted-foreground text-center">
-          <p>
-            ヒント: 各カードをドラッグ &
-            ドロップして順位を並べ替え、\"回答をチェック\"で正誤が表示されます。
-          </p>
-        </div>
       </div>
     </div>
   );
