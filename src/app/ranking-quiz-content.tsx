@@ -18,7 +18,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -43,7 +43,7 @@ export default function RankingQuizContent({
   setOrder,
 }: RankingQuizContentProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, {
@@ -59,7 +59,7 @@ export default function RankingQuizContent({
   function onDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveId(null);
-    
+
     if (!over || active.id === over.id) return;
     setOrder((prev) => {
       const oldIndex = prev.indexOf(String(active.id));
@@ -68,7 +68,9 @@ export default function RankingQuizContent({
     });
   }
 
-  const activeOption = activeId ? options.find(option => option.id === activeId) : null;
+  const activeOption = activeId
+    ? options.find((option) => option.id === activeId)
+    : null;
 
   return (
     <DndContext
@@ -96,7 +98,13 @@ export default function RankingQuizContent({
           </AnimatePresence>
         </div>
       </SortableContext>
-      <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
+      <DragOverlay
+        dropAnimation={{
+          duration: 150,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        }}
+        style={{ willChange: 'transform' }}
+      >
         {activeOption ? (
           <DragOverlayItem
             label={activeOption.label}
@@ -116,7 +124,13 @@ type SortableItemProps = {
   isDraggedOver?: boolean;
 };
 
-const SortableItem = ({ id, index, label, status, isDraggedOver }: SortableItemProps) => {
+const SortableItem = ({
+  id,
+  index,
+  label,
+  status,
+  isDraggedOver,
+}: SortableItemProps) => {
   const {
     attributes,
     listeners,
@@ -124,20 +138,21 @@ const SortableItem = ({ id, index, label, status, isDraggedOver }: SortableItemP
     transform,
     transition,
     isDragging,
-  } = useSortable({ 
+  } = useSortable({
     id,
     transition: {
-      duration: 300,
-      easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+      duration: 200,
+      easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
     },
   });
-  
+
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
-    transition: transition || 'transform 300ms cubic-bezier(0.25, 1, 0.5, 1)',
-    opacity: isDragging ? 0.5 : 1,
+    transition: transition || 'transform 200ms cubic-bezier(0.22, 1, 0.36, 1)',
+    opacity: isDragging ? 0.4 : 1,
+    willChange: 'transform',
   };
-  
+
   return (
     <motion.div
       layout
@@ -145,20 +160,20 @@ const SortableItem = ({ id, index, label, status, isDraggedOver }: SortableItemP
       ref={setNodeRef}
       style={style}
       className="w-full"
-      initial={{ opacity: 0.8, scale: 0.98, y: 8 }}
-      animate={{ 
-        opacity: isDraggedOver ? 0.7 : 1, 
-        scale: isDraggedOver ? 0.98 : 1, 
-        y: 0 
+      initial={{ opacity: 0.9, scale: 0.99, y: 4 }}
+      animate={{
+        opacity: isDraggedOver ? 0.8 : 1,
+        scale: isDraggedOver ? 0.99 : 1,
+        y: 0,
       }}
       transition={{
         type: 'spring',
-        stiffness: 300,
-        damping: 30,
-        mass: 0.8,
+        stiffness: 200,
+        damping: 25,
+        mass: 0.6,
       }}
-      whileHover={!isDragging ? { scale: 1.02 } : {}}
-      whileTap={!isDragging ? { scale: 0.98 } : {}}
+      whileHover={!isDragging ? { scale: 1.01 } : {}}
+      whileTap={!isDragging ? { scale: 0.99 } : {}}
     >
       <ItemCard
         attributes={attributes}
@@ -172,13 +187,13 @@ const SortableItem = ({ id, index, label, status, isDraggedOver }: SortableItemP
   );
 };
 
-const ItemCard = ({ 
-  attributes, 
-  listeners, 
-  isDragging, 
-  status, 
-  index, 
-  label 
+const ItemCard = ({
+  attributes,
+  listeners,
+  isDragging,
+  status,
+  index,
+  label,
 }: {
   attributes: any;
   listeners: any;
@@ -191,12 +206,14 @@ const ItemCard = ({
     {...attributes}
     {...listeners}
     className={cn(
-      'flex items-center gap-3 px-3 py-2 cursor-grab active:cursor-grabbing rounded-2xl shadow-sm transition-all duration-200',
+      'flex items-center gap-3 px-3 py-2 cursor-grab active:cursor-grabbing rounded-2xl shadow-sm',
+      'transition-shadow duration-150 ease-out',
       'hover:shadow-md hover:ring-1 hover:ring-primary/20',
-      isDragging && 'opacity-50 shadow-lg ring-2 ring-primary/40 scale-105',
+      isDragging && 'shadow-lg ring-2 ring-primary/40',
       status === 'correct' && 'border-green-500/70 bg-green-50/30',
       status === 'incorrect' && 'border-destructive/60 bg-red-50/30'
     )}
+    style={{ willChange: 'transform, box-shadow' }}
   >
     <CardContent className="p-0 w-full">
       <div className="flex justify-between items-center">
@@ -213,8 +230,17 @@ const ItemCard = ({
         </div>
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
-          animate={status !== 'neutral' ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          animate={
+            status !== 'neutral'
+              ? { scale: 1, opacity: 1 }
+              : { scale: 0, opacity: 0 }
+          }
+          transition={{
+            type: 'spring',
+            stiffness: 300,
+            damping: 20,
+            mass: 0.5,
+          }}
         >
           {status === 'correct' && (
             <Check className="w-5 h-5 text-green-600" aria-label="correct" />
@@ -228,12 +254,18 @@ const ItemCard = ({
   </Card>
 );
 
-const DragOverlayItem = ({ label, index }: { label: string; index: number }) => (
+const DragOverlayItem = ({
+  label,
+  index,
+}: {
+  label: string;
+  index: number;
+}) => (
   <motion.div
     className="w-full"
-    initial={{ scale: 1.05, rotate: 5 }}
-    animate={{ scale: 1.08, rotate: 3 }}
-    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    initial={{ scale: 1.02, rotate: 2 }}
+    animate={{ scale: 1.05, rotate: 1 }}
+    transition={{ type: 'spring', stiffness: 250, damping: 18, mass: 0.7 }}
   >
     <Card className="flex items-center gap-3 px-3 py-2 rounded-2xl shadow-xl border-primary/40 bg-background/95 backdrop-blur-sm">
       <CardContent className="p-0 w-full">

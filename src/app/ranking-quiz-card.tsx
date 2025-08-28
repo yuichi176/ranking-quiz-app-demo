@@ -47,7 +47,7 @@ export const RankingQuizCard = () => {
 
   const options = useMemo(
     () => order.map((id) => initialOptions.find((o) => o.id === id)!),
-    [order, initialOptions]
+    [order]
   );
 
   const statuses = useMemo(() => {
