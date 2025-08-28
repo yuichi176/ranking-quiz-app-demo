@@ -83,17 +83,13 @@ export default function RankingQuizContent({
   );
 }
 
-function SortableItem({
-  id,
-  index,
-  label,
-  status,
-}: {
+type SortableItemProps = {
   id: string;
   index: number;
   label: string;
   status?: 'correct' | 'incorrect' | 'neutral';
-}) {
+};
+const SortableItem = ({ id, index, label, status }: SortableItemProps) => {
   const {
     attributes,
     listeners,
@@ -126,27 +122,27 @@ function SortableItem({
         )}
       >
         <CardContent className="p-0 w-full">
-          <div className="flex items-center gap-3">
-            <Badge
-              variant="secondary"
-              className="shrink-0 text-base w-9 h-9 rounded-full grid place-items-center"
-            >
-              {index + 1}
-            </Badge>
-            <p className="text-base sm:text-lg leading-tight select-none">
-              {label}
-            </p>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <Badge
+                variant="secondary"
+                className="shrink-0 text-base w-9 h-9 rounded-full grid place-items-center"
+              >
+                {index + 1}
+              </Badge>
+              <p className="text-base sm:text-lg leading-tight select-none">
+                {label}
+              </p>
+            </div>
+            {status === 'correct' && (
+              <Check className="w-5 h-5 text-green-600" aria-label="correct" />
+            )}
+            {status === 'incorrect' && (
+              <X className="w-5 h-5 text-red-600" aria-label="incorrect" />
+            )}
           </div>
         </CardContent>
-        <CardFooter className="p-0 ml-auto">
-          {status === 'correct' && (
-            <Check className="w-5 h-5 text-green-600" aria-label="correct" />
-          )}
-          {status === 'incorrect' && (
-            <X className="w-5 h-5 text-red-600" aria-label="incorrect" />
-          )}
-        </CardFooter>
       </Card>
     </motion.div>
   );
-}
+};
