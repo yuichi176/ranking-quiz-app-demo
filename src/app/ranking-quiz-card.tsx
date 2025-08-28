@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import React, { useMemo, useState } from 'react';
 import RankingQuizContent from '@/app/ranking-quiz-content';
 import { Button } from '@/components/ui/button';
-import { Check, Eye, Shuffle } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 const initialOptions = [
   { id: 'opt1', label: 'Mount Everest' },
@@ -63,17 +63,7 @@ export const RankingQuizCard = () => {
     [statuses]
   );
 
-  const shuffleOrder = (arr: string[]) => {
-    setOrder(shuffle([...order]));
-  };
-
   function checkAnswer() {
-    setChecked(true);
-  }
-
-  function revealAnswer() {
-    setOrder([...correctOrder]);
-    setRevealed(true);
     setChecked(true);
   }
 
@@ -112,26 +102,10 @@ export const RankingQuizCard = () => {
               statuses={statuses}
             />
           </CardContent>
-          <CardFooter className="flex flex-col sm:flex-row gap-3 justify-between">
-            <div className="flex gap-2">
-              <Button
-                onClick={() => shuffleOrder(order)}
-                variant="ghost"
-                className="rounded-2xl"
-              >
-                <Shuffle className="w-4 h-4 mr-2" /> シャッフル
-              </Button>
-            </div>
+          <CardFooter className="flex flex-col sm:flex-row gap-3 justify-end">
             <div className="flex gap-2">
               <Button onClick={checkAnswer} className="rounded-2xl">
-                <Check className="w-4 h-4 mr-2" /> 回答をチェック
-              </Button>
-              <Button
-                onClick={revealAnswer}
-                variant="outline"
-                className="rounded-2xl"
-              >
-                <Eye className="w-4 h-4 mr-2" /> 解答を表示
+                <Check className="w-4 h-4" /> 送信
               </Button>
             </div>
           </CardFooter>
