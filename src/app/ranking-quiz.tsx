@@ -28,7 +28,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, X, RefreshCw, Eye, Shuffle } from 'lucide-react';
+import { Check, X, Eye, Shuffle } from 'lucide-react';
 // ---- Types ----
 export type QuizOption = {
   id: string; // unique stable ID
@@ -178,11 +178,6 @@ export default function RankingQuizApp(props: Partial<RankingQuizProps>) {
       return arrayMove(prev, oldIndex, newIndex);
     });
   }
-  function resetShuffle() {
-    setOrder(shuffle(initialOptions.map((o) => o.id)));
-    setChecked(false);
-    setRevealed(false);
-  }
   function revealAnswer() {
     setOrder([...correctOrder]);
     setRevealed(true);
@@ -244,13 +239,6 @@ export default function RankingQuizApp(props: Partial<RankingQuizProps>) {
           </CardContent>
           <CardFooter className="flex flex-col sm:flex-row gap-3 justify-between">
             <div className="flex gap-2">
-              <Button
-                onClick={resetShuffle}
-                variant="secondary"
-                className="rounded-2xl"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" /> リセット
-              </Button>
               <Button
                 onClick={() => setOrder(shuffle([...order]))}
                 variant="ghost"
