@@ -41,7 +41,6 @@ const correctOrder = [
 
 export const RankingQuizCard = () => {
   const [checked, setChecked] = useState(false);
-  const [revealed, setRevealed] = useState(false);
   const [order, setOrder] = useState<string[]>(() =>
     shuffle(initialOptions.map((o) => o.id))
   );
@@ -64,6 +63,7 @@ export const RankingQuizCard = () => {
   );
 
   function checkAnswer() {
+    // TODO: send anwer to server
     setChecked(true);
   }
 
@@ -80,9 +80,6 @@ export const RankingQuizCard = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-sm">
-                  合計 10 項目
-                </Badge>
                 {checked && (
                   <Badge
                     className={cn(score === 10 ? 'bg-green-600' : 'bg-primary')}
@@ -90,7 +87,6 @@ export const RankingQuizCard = () => {
                     スコア: {score} / 10
                   </Badge>
                 )}
-                {revealed && <Badge variant="outline">解答を表示中</Badge>}
               </div>
             </div>
           </CardHeader>
