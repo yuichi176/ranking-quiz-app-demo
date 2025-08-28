@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
