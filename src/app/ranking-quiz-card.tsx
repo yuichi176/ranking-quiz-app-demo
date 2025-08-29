@@ -41,21 +41,41 @@ const correctOrder = [
 
 export const RankingQuizCard = () => {
   const [checked, setChecked] = useState(false);
-  const [order, setOrder] = useState<string[]>(() =>
+  const [optionsArea, setOptionsArea] = useState<string[]>(() =>
     shuffle(initialOptions.map((o) => o.id))
   );
+  const [ranking, setRanking] = useState<{
+    position1: string[];
+    position2: string[];
+    position3: string[];
+    position4: string[];
+    position5: string[];
+  }>({
+    position1: [],
+    position2: [],
+    position3: [],
+    position4: [],
+    position5: [],
+  });
 
-  const options = useMemo(
-    () => order.map((id) => initialOptions.find((o) => o.id === id)!),
-    [order]
-  );
+  const allOptions = useMemo(() => initialOptions, []);
+
+  const getRankingArray = useMemo(() => {
+    return [
+      ...ranking.position1,
+      ...ranking.position2,
+      ...ranking.position3,
+      ...ranking.position4,
+      ...ranking.position5,
+    ];
+  }, [ranking]);
 
   const statuses = useMemo(() => {
-    if (!checked) return order.map(() => 'neutral' as const);
-    return order.map((id, i) =>
+    if (!checked) return getRankingArray.map(() => 'neutral' as const);
+    return getRankingArray.map((id, i) =>
       id === correctOrder[i] ? ('correct' as const) : ('incorrect' as const)
     );
-  }, [order, correctOrder, checked]);
+  }, [getRankingArray, correctOrder, checked]);
 
   const score = useMemo(
     () => statuses.filter((s) => s === 'correct').length,
@@ -76,15 +96,15 @@ export const RankingQuizCard = () => {
               ランキング並べ替えクイズ
             </CardTitle>
             <p className="text-muted-foreground">
-              次の10個を正しい順位（1位→10位）にドラッグして並べ替えてください
+              オプションエリアから上位5つを予想して、1位〜5位にドラッグして並べてください
             </p>
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
               <div className="flex items-center gap-2">
                 {checked && (
                   <Badge
-                    className={cn(score === 10 ? 'bg-green-600' : 'bg-primary')}
+                    className={cn(score === 5 ? 'bg-green-600' : 'bg-primary')}
                   >
-                    スコア: {score} / 10
+                    スコア: {score} / 5
                   </Badge>
                 )}
               </div>
@@ -92,9 +112,11 @@ export const RankingQuizCard = () => {
           </CardHeader>
           <CardContent>
             <RankingQuizContent
-              options={options}
-              order={order}
-              setOrder={setOrder}
+              allOptions={allOptions}
+              optionsArea={optionsArea}
+              ranking={ranking}
+              setOptionsArea={setOptionsArea}
+              setRanking={setRanking}
               statuses={statuses}
             />
           </CardContent>

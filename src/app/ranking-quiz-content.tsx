@@ -10,13 +10,14 @@ import {
   closestCenter,
   useSensor,
   useSensors,
+  DragOverEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
-  arrayMove,
   useSortable,
 } from '@dnd-kit/sortable';
+import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,18 +30,30 @@ export type QuizOption = {
   label: string;
 };
 
+type RankingArea = {
+  position1: string[];
+  position2: string[];
+  position3: string[];
+  position4: string[];
+  position5: string[];
+};
+
 type RankingQuizContentProps = {
-  options: QuizOption[];
-  order: string[];
+  allOptions: QuizOption[];
+  optionsArea: string[];
+  ranking: RankingArea;
+  setOptionsArea: React.Dispatch<React.SetStateAction<string[]>>;
+  setRanking: React.Dispatch<React.SetStateAction<RankingArea>>;
   statuses: ('correct' | 'incorrect' | 'neutral')[];
-  setOrder: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 export default function RankingQuizContent({
-  options,
-  order,
+  allOptions,
+  optionsArea,
+  ranking,
+  setOptionsArea,
+  setRanking,
   statuses,
-  setOrder,
 }: RankingQuizContentProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -52,6 +65,15 @@ export default function RankingQuizContent({
     useSensor(KeyboardSensor)
   );
 
+  const allItemIds = [
+    ...optionsArea,
+    ...ranking.position1,
+    ...ranking.position2,
+    ...ranking.position3,
+    ...ranking.position4,
+    ...ranking.position5,
+  ];
+
   function onDragStart(event: DragStartEvent) {
     setActiveId(String(event.active.id));
   }
@@ -60,17 +82,97 @@ export default function RankingQuizContent({
     const { active, over } = event;
     setActiveId(null);
 
-    if (!over || active.id === over.id) return;
-    setOrder((prev) => {
-      const oldIndex = prev.indexOf(String(active.id));
-      const newIndex = prev.indexOf(String(over.id));
-      return arrayMove(prev, oldIndex, newIndex);
-    });
+    if (!over) return;
+
+    const activeItemId = String(active.id);
+    const overContainerId = String(over.id);
+
+    // Find source container
+    let sourceContainer: string | null = null;
+    if (optionsArea.includes(activeItemId)) {
+      sourceContainer = 'options';
+    } else if (ranking.position1.includes(activeItemId)) {
+      sourceContainer = 'position1';
+    } else if (ranking.position2.includes(activeItemId)) {
+      sourceContainer = 'position2';
+    } else if (ranking.position3.includes(activeItemId)) {
+      sourceContainer = 'position3';
+    } else if (ranking.position4.includes(activeItemId)) {
+      sourceContainer = 'position4';
+    } else if (ranking.position5.includes(activeItemId)) {
+      sourceContainer = 'position5';
+    }
+
+    // Determine target container
+    let targetContainer = overContainerId;
+    if (allItemIds.includes(overContainerId)) {
+      // Dropped on an item, find which container it belongs to
+      if (optionsArea.includes(overContainerId)) {
+        targetContainer = 'options';
+      } else if (ranking.position1.includes(overContainerId)) {
+        targetContainer = 'position1';
+      } else if (ranking.position2.includes(overContainerId)) {
+        targetContainer = 'position2';
+      } else if (ranking.position3.includes(overContainerId)) {
+        targetContainer = 'position3';
+      } else if (ranking.position4.includes(overContainerId)) {
+        targetContainer = 'position4';
+      } else if (ranking.position5.includes(overContainerId)) {
+        targetContainer = 'position5';
+      }
+    }
+
+    if (sourceContainer === targetContainer) return;
+
+    // Remove from source
+    if (sourceContainer === 'options') {
+      setOptionsArea((prev) => prev.filter((id) => id !== activeItemId));
+    } else if (sourceContainer) {
+      setRanking((prev) => ({
+        ...prev,
+        [sourceContainer]: prev[sourceContainer as keyof RankingArea].filter(
+          (id) => id !== activeItemId
+        ),
+      }));
+    }
+
+    // Add to target
+    if (targetContainer === 'options') {
+      setOptionsArea((prev) => [...prev, activeItemId]);
+    } else if (targetContainer?.startsWith('position')) {
+      // Only allow one item per ranking position
+      setRanking((prev) => {
+        const positionKey = targetContainer as keyof RankingArea;
+        const currentItem = prev[positionKey][0];
+
+        // Move existing item back to options if there is one
+        if (currentItem) {
+          setOptionsArea((optPrev) => [...optPrev, currentItem]);
+        }
+
+        return {
+          ...prev,
+          [positionKey]: [activeItemId],
+        };
+      });
+    }
   }
 
   const activeOption = activeId
-    ? options.find((option) => option.id === activeId)
+    ? allOptions.find((option) => option.id === activeId)
     : null;
+
+  const getRankingStatus = (itemId: string) => {
+    const allRankingItems = [
+      ...ranking.position1,
+      ...ranking.position2,
+      ...ranking.position3,
+      ...ranking.position4,
+      ...ranking.position5,
+    ];
+    const index = allRankingItems.indexOf(itemId);
+    return index >= 0 && index < statuses.length ? statuses[index] : 'neutral';
+  };
 
   return (
     <DndContext
@@ -79,58 +181,122 @@ export default function RankingQuizContent({
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >
-      <SortableContext items={order} strategy={verticalListSortingStrategy}>
-        <div className="space-y-3">
-          <AnimatePresence initial={false}>
-            {options.map((option) => {
-              const index = order.indexOf(option.id);
-              return (
-                <SortableItem
-                  key={option.id}
-                  id={option.id}
-                  index={index}
-                  label={option.label}
-                  status={statuses[index]}
-                  isDraggedOver={activeId !== null && activeId !== option.id}
-                />
-              );
-            })}
-          </AnimatePresence>
+      <div className="space-y-6">
+        {/* Options Area */}
+        <DropZone containerId="options" title="オプション">
+          <SortableContext
+            items={optionsArea}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {optionsArea.map((itemId) => {
+                const option = allOptions.find((o) => o.id === itemId)!;
+                return (
+                  <DraggleItem
+                    key={itemId}
+                    id={itemId}
+                    label={option.label}
+                    status="neutral"
+                  />
+                );
+              })}
+            </div>
+          </SortableContext>
+        </DropZone>
+
+        {/* Ranking Positions */}
+        <div className="grid grid-cols-1 gap-4">
+          {(
+            [
+              'position1',
+              'position2',
+              'position3',
+              'position4',
+              'position5',
+            ] as const
+          ).map((positionKey, index) => (
+            <DropZone
+              key={positionKey}
+              containerId={positionKey}
+              title={`${index + 1}位`}
+            >
+              <SortableContext
+                items={ranking[positionKey]}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-2 w-full">
+                  {ranking[positionKey].map((itemId) => {
+                    const option = allOptions.find((o) => o.id === itemId)!;
+                    return (
+                      <DraggleItem
+                        key={itemId}
+                        id={itemId}
+                        label={option.label}
+                        status={getRankingStatus(itemId)}
+                      />
+                    );
+                  })}
+                </div>
+              </SortableContext>
+            </DropZone>
+          ))}
         </div>
-      </SortableContext>
+      </div>
+
       <DragOverlay
         dropAnimation={{
           duration: 150,
           easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
         }}
-        style={{ willChange: 'transform' }}
       >
-        {activeOption ? (
-          <DragOverlayItem
-            label={activeOption.label}
-            index={order.indexOf(activeOption.id)}
-          />
-        ) : null}
+        {activeOption ? <DragOverlayItem label={activeOption.label} /> : null}
       </DragOverlay>
     </DndContext>
   );
 }
 
-type SortableItemProps = {
-  id: string;
-  index: number;
-  label: string;
-  status?: 'correct' | 'incorrect' | 'neutral';
-  isDraggedOver?: boolean;
+// Drop Zone Component
+type DropZoneProps = {
+  containerId: string;
+  title: string;
+  children: React.ReactNode;
 };
 
-const SortableItem = ({
-  id,
-  index,
-  label,
-  status,
-  isDraggedOver,
-}: SortableItemProps) => {
+const DropZone = ({ containerId, title, children }: DropZoneProps) => {
+  const { isOver, setNodeRef } = useDroppable({ id: containerId });
+  const isRankingPosition = containerId.startsWith('position');
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        'border-2 border-dashed border-muted-foreground/20 rounded-2xl transition-all duration-200',
+        'hover:border-muted-foreground/40',
+        isOver && 'border-primary bg-primary/5',
+        isRankingPosition ? 'p-3 min-w-[200px]' : 'p-4'
+      )}
+    >
+      <h3
+        className={cn(
+          'font-semibold mb-3 text-center',
+          isRankingPosition ? 'text-base' : 'text-lg'
+        )}
+      >
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+};
+
+// Draggable Item Component
+type DraggleItemProps = {
+  id: string;
+  label: string;
+  status: 'correct' | 'incorrect' | 'neutral';
+};
+
+const DraggleItem = ({ id, label, status }: DraggleItemProps) => {
   const {
     attributes,
     listeners,
@@ -161,106 +327,69 @@ const SortableItem = ({
       style={style}
       className="w-full"
       initial={{ opacity: 0.9, scale: 0.99, y: 4 }}
-      animate={{
-        opacity: isDraggedOver ? 0.8 : 1,
-        scale: isDraggedOver ? 0.99 : 1,
-        y: 0,
-      }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{
         type: 'spring',
         stiffness: 200,
         damping: 25,
         mass: 0.6,
       }}
-      whileHover={!isDragging ? { scale: 1.01 } : {}}
-      whileTap={!isDragging ? { scale: 0.99 } : {}}
+      whileHover={!isDragging ? { scale: 1.02 } : {}}
+      whileTap={!isDragging ? { scale: 0.98 } : {}}
     >
-      <ItemCard
-        attributes={attributes}
-        listeners={listeners}
-        isDragging={isDragging}
-        status={status}
-        index={index}
-        label={label}
-      />
+      <Card
+        {...attributes}
+        {...listeners}
+        className={cn(
+          'flex items-center gap-3 px-3 py-2 cursor-grab active:cursor-grabbing rounded-2xl shadow-sm',
+          'transition-all duration-150 ease-out',
+          'hover:shadow-md hover:ring-1 hover:ring-primary/20',
+          isDragging && 'shadow-lg ring-2 ring-primary/40',
+          status === 'correct' && 'border-green-500/70 bg-green-50/30',
+          status === 'incorrect' && 'border-destructive/60 bg-red-50/30'
+        )}
+        style={{ willChange: 'transform, box-shadow' }}
+      >
+        <CardContent className="p-0 w-full">
+          <div className="flex justify-between items-center min-h-[40px]">
+            <div className="flex items-center gap-2 flex-1">
+              <p className="text-xs sm:text-sm leading-tight select-none font-medium text-left break-words">
+                {label}
+              </p>
+            </div>
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={
+                status !== 'neutral'
+                  ? { scale: 1, opacity: 1 }
+                  : { scale: 0, opacity: 0 }
+              }
+              transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 20,
+                mass: 0.5,
+              }}
+              className="shrink-0 ml-2"
+            >
+              {status === 'correct' && (
+                <Check
+                  className="w-4 h-4 text-green-600"
+                  aria-label="correct"
+                />
+              )}
+              {status === 'incorrect' && (
+                <X className="w-4 h-4 text-red-600" aria-label="incorrect" />
+              )}
+            </motion.div>
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 };
 
-const ItemCard = ({
-  attributes,
-  listeners,
-  isDragging,
-  status,
-  index,
-  label,
-}: {
-  attributes: any;
-  listeners: any;
-  isDragging: boolean;
-  status?: 'correct' | 'incorrect' | 'neutral';
-  index: number;
-  label: string;
-}) => (
-  <Card
-    {...attributes}
-    {...listeners}
-    className={cn(
-      'flex items-center gap-3 px-3 py-2 cursor-grab active:cursor-grabbing rounded-2xl shadow-sm',
-      'transition-shadow duration-150 ease-out',
-      'hover:shadow-md hover:ring-1 hover:ring-primary/20',
-      isDragging && 'shadow-lg ring-2 ring-primary/40',
-      status === 'correct' && 'border-green-500/70 bg-green-50/30',
-      status === 'incorrect' && 'border-destructive/60 bg-red-50/30'
-    )}
-    style={{ willChange: 'transform, box-shadow' }}
-  >
-    <CardContent className="p-0 w-full">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <Badge
-            variant="secondary"
-            className="shrink-0 text-base w-9 h-9 rounded-full grid place-items-center transition-colors"
-          >
-            {index + 1}
-          </Badge>
-          <p className="text-base sm:text-lg leading-tight select-none">
-            {label}
-          </p>
-        </div>
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={
-            status !== 'neutral'
-              ? { scale: 1, opacity: 1 }
-              : { scale: 0, opacity: 0 }
-          }
-          transition={{
-            type: 'spring',
-            stiffness: 300,
-            damping: 20,
-            mass: 0.5,
-          }}
-        >
-          {status === 'correct' && (
-            <Check className="w-5 h-5 text-green-600" aria-label="correct" />
-          )}
-          {status === 'incorrect' && (
-            <X className="w-5 h-5 text-red-600" aria-label="incorrect" />
-          )}
-        </motion.div>
-      </div>
-    </CardContent>
-  </Card>
-);
-
-const DragOverlayItem = ({
-  label,
-  index,
-}: {
-  label: string;
-  index: number;
-}) => (
+const DragOverlayItem = ({ label }: { label: string }) => (
   <motion.div
     className="w-full"
     initial={{ scale: 1.02, rotate: 2 }}
@@ -270,13 +399,7 @@ const DragOverlayItem = ({
     <Card className="flex items-center gap-3 px-3 py-2 rounded-2xl shadow-xl border-primary/40 bg-background/95 backdrop-blur-sm">
       <CardContent className="p-0 w-full">
         <div className="flex items-center gap-3">
-          <Badge
-            variant="secondary"
-            className="shrink-0 text-base w-9 h-9 rounded-full grid place-items-center bg-primary text-primary-foreground"
-          >
-            {index + 1}
-          </Badge>
-          <p className="text-base sm:text-lg leading-tight select-none font-medium">
+          <p className="text-sm sm:text-base leading-tight select-none font-medium">
             {label}
           </p>
         </div>
