@@ -1,11 +1,7 @@
-import { RankingQuizCard } from '@/app/ranking-quiz-card';
-
 export default function Home() {
   return (
     <div>
-      <main>
-        <RankingQuizCard />
-      </main>
+      <main>はろー</main>
     </div>
   );
 }

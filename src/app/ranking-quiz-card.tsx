@@ -10,36 +10,21 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import React, { useMemo, useState } from 'react';
-import RankingQuizContent from '@/app/ranking-quiz-content';
+import RankingQuizContent, { QuizOption } from '@/app/ranking-quiz-content';
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
 
-const initialOptions = [
-  { id: 'opt1', label: 'Mount Everest' },
-  { id: 'opt2', label: 'K2' },
-  { id: 'opt3', label: 'Kangchenjunga' },
-  { id: 'opt4', label: 'Lhotse' },
-  { id: 'opt5', label: 'Makalu' },
-  { id: 'opt6', label: 'Cho Oyu' },
-  { id: 'opt7', label: 'Dhaulagiri I' },
-  { id: 'opt8', label: 'Manaslu' },
-  { id: 'opt9', label: 'Nanga Parbat' },
-  { id: 'opt10', label: 'Annapurna I' },
-];
-const correctOrder = [
-  'opt1',
-  'opt2',
-  'opt3',
-  'opt4',
-  'opt5',
-  'opt6',
-  'opt7',
-  'opt8',
-  'opt9',
-  'opt10',
-];
+type RankingQuizCardProps = {
+  title: string;
+  initialOptions: QuizOption[];
+  correctOrder: string[];
+};
 
-export const RankingQuizCard = () => {
+export const RankingQuizCard = ({
+  title,
+  initialOptions,
+  correctOrder,
+}: RankingQuizCardProps) => {
   const [checked, setChecked] = useState(false);
   const [optionsArea, setOptionsArea] = useState<string[]>(() =>
     shuffle(initialOptions.map((o) => o.id))
@@ -93,10 +78,10 @@ export const RankingQuizCard = () => {
         <Card className="rounded-3xl shadow-lg">
           <CardHeader className="space-y-2">
             <CardTitle className="text-2xl sm:text-3xl font-bold tracking-tight">
-              ランキング並べ替えクイズ
+              ランキングクイズ：{title}
             </CardTitle>
             <p className="text-muted-foreground">
-              オプションエリアから上位5つを予想して、1位〜5位にドラッグして並べてください
+              選択肢をドラッグして、ランキング形式で並び替えてください。
             </p>
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
               <div className="flex items-center gap-2">

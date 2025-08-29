@@ -10,7 +10,6 @@ import {
   closestCenter,
   useSensor,
   useSensors,
-  DragOverEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -20,9 +19,8 @@ import {
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Check, X } from 'lucide-react';
 
 export type QuizOption = {
@@ -183,7 +181,7 @@ export default function RankingQuizContent({
     >
       <div className="space-y-6">
         {/* Options Area */}
-        <DropZone containerId="options" title="オプション">
+        <DropZone containerId="options" title="選択肢">
           <SortableContext
             items={optionsArea}
             strategy={verticalListSortingStrategy}
