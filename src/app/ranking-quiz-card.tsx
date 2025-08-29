@@ -63,10 +63,29 @@ export const RankingQuizCard = ({
     );
   }, [getRankingArray, correctOrder, checked]);
 
-  const score = useMemo(
-    () => statuses.filter((s) => s === 'correct').length,
-    [statuses]
-  );
+  const score = useMemo(() => {
+    let totalScore = 0;
+    
+    // Base points: 1 point for each correct item in top 5 (regardless of position)
+    const userTop5 = getRankingArray.slice(0, 5);
+    const correctTop5 = correctOrder.slice(0, 5);
+    
+    userTop5.forEach(userItem => {
+      if (correctTop5.includes(userItem)) {
+        totalScore += 1;
+      }
+    });
+    
+    // Exact match bonus points
+    const exactMatchBonus = [5, 4, 3, 2, 1]; // 1st, 2nd, 3rd, 4th, 5th
+    userTop5.forEach((userItem, index) => {
+      if (userItem === correctOrder[index]) {
+        totalScore += exactMatchBonus[index];
+      }
+    });
+    
+    return totalScore;
+  }, [getRankingArray, correctOrder]);
 
   const checkAnswer = async () => {
     setChecked(true);
@@ -98,9 +117,9 @@ export const RankingQuizCard = ({
               <div className="flex items-center gap-2">
                 {checked && (
                   <Badge
-                    className={cn(score === 5 ? 'bg-green-600' : 'bg-primary')}
+                    className={cn(score >= 10 ? 'bg-green-600' : 'bg-primary')}
                   >
-                    スコア: {score} / 5
+                    スコア: {score}
                   </Badge>
                 )}
               </div>
