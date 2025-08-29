@@ -13,6 +13,7 @@ import React, { useMemo, useState } from 'react';
 import RankingQuizContent, { QuizOption } from '@/app/ranking-quiz-content';
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
+import { mutate } from 'swr';
 
 type RankingQuizCardProps = {
   title: string;
@@ -67,10 +68,20 @@ export const RankingQuizCard = ({
     [statuses]
   );
 
-  function checkAnswer() {
-    // TODO: send anwer to server
+  const checkAnswer = async () => {
     setChecked(true);
-  }
+    await mutate(
+      '/api/score',
+      await fetch('/api/score', {
+        method: 'POST',
+        body: JSON.stringify({
+          quizTitle: title,
+          user: 'dummy_user',
+          score: score,
+        }),
+      })
+    );
+  };
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-background to-muted/30 py-10 px-4 sm:px-6 lg:px-10">
