@@ -19,7 +19,7 @@ export default function SushiRankingQuizPage() {
     <div>
       <main>
         <RankingQuizCard
-          title="寿司ネタ"
+          title="寿司ネタ編"
           initialOptions={initialOptions}
           correctOrder={correctOrder}
         />

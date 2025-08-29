@@ -19,7 +19,7 @@ export default function DinosaurRankingQuizPage() {
     <div>
       <main>
         <RankingQuizCard
-          title="恐竜"
+          title="恐竜編"
           initialOptions={initialOptions}
           correctOrder={correctOrder}
         />
