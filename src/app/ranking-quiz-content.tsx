@@ -43,6 +43,7 @@ type RankingQuizContentProps = {
   setOptionsArea: React.Dispatch<React.SetStateAction<string[]>>;
   setRanking: React.Dispatch<React.SetStateAction<RankingArea>>;
   statuses: ('correct' | 'incorrect' | 'neutral')[];
+  checked: boolean;
 };
 
 export default function RankingQuizContent({
@@ -52,6 +53,7 @@ export default function RankingQuizContent({
   setOptionsArea,
   setRanking,
   statuses,
+  checked,
 }: RankingQuizContentProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -80,7 +82,7 @@ export default function RankingQuizContent({
     const { active, over } = event;
     setActiveId(null);
 
-    if (!over) return;
+    if (!over || checked) return;
 
     const activeItemId = String(active.id);
     const overContainerId = String(over.id);
@@ -195,6 +197,7 @@ export default function RankingQuizContent({
                     id={itemId}
                     label={option.label}
                     status="neutral"
+                    checked={checked}
                   />
                 );
               })}
@@ -240,6 +243,7 @@ export default function RankingQuizContent({
                               id={itemId}
                               label={option.label}
                               status={getRankingStatus(itemId)}
+                              checked={checked}
                             />
                           );
                         })
@@ -310,9 +314,10 @@ type DraggleItemProps = {
   id: string;
   label: string;
   status: 'correct' | 'incorrect' | 'neutral';
+  checked?: boolean;
 };
 
-const DraggleItem = ({ id, label, status }: DraggleItemProps) => {
+const DraggleItem = ({ id, label, status, checked = false }: DraggleItemProps) => {
   const {
     attributes,
     listeners,
@@ -355,11 +360,11 @@ const DraggleItem = ({ id, label, status }: DraggleItemProps) => {
     >
       <Card
         {...attributes}
-        {...listeners}
+        {...(checked ? {} : listeners)}
         className={cn(
-          'flex items-center gap-3 px-3 py-2 cursor-grab active:cursor-grabbing rounded-2xl shadow-sm',
+          'flex items-center gap-3 px-3 py-2 rounded-2xl shadow-sm',
           'transition-all duration-150 ease-out',
-          'hover:shadow-md hover:ring-1 hover:ring-primary/20',
+          checked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing hover:shadow-md hover:ring-1 hover:ring-primary/20',
           isDragging && 'shadow-lg ring-2 ring-primary/40',
           status === 'correct' && 'border-green-500/70 bg-green-50/30',
           status === 'incorrect' && 'border-destructive/60 bg-red-50/30'
