@@ -113,6 +113,13 @@ export const RankingQuizCard = ({
             <p className="text-muted-foreground">
               選択肢をドラッグして、ランキング形式で並び替えてください。
             </p>
+            <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+              <p className="font-medium mb-1">📊 スコアリング方式：</p>
+              <ul className="space-y-1">
+                <li>• トップ5に正解が含まれている場合：各1ポイント</li>
+                <li>• 順位が完全一致の場合のボーナス：1位+5、2位+4、3位+3、4位+2、5位+1ポイント</li>
+              </ul>
+            </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
               <div className="flex items-center gap-2">
                 {checked && (
