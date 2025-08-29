@@ -222,13 +222,10 @@ export default function RankingQuizContent({
                   {index + 1}
                 </div>
               </div>
-              
+
               {/* Drop Zone */}
               <div className="flex-1">
-                <DropZone
-                  containerId={positionKey}
-                  title=""
-                >
+                <DropZone containerId={positionKey} title="">
                   <SortableContext
                     items={ranking[positionKey]}
                     strategy={verticalListSortingStrategy}
@@ -236,7 +233,9 @@ export default function RankingQuizContent({
                     <div className="min-h-[60px] flex items-center">
                       {ranking[positionKey].length > 0 ? (
                         ranking[positionKey].map((itemId) => {
-                          const option = allOptions.find((o) => o.id === itemId)!;
+                          const option = allOptions.find(
+                            (o) => o.id === itemId
+                          )!;
                           return (
                             <DraggleItem
                               key={itemId}
