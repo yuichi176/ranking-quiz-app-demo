@@ -205,7 +205,7 @@ export default function RankingQuizContent({
         </DropZone>
 
         {/* Ranking Positions */}
-        <div className="grid grid-cols-1 gap-4">
+        <div className="space-y-3">
           {(
             [
               'position1',
@@ -215,30 +215,47 @@ export default function RankingQuizContent({
               'position5',
             ] as const
           ).map((positionKey, index) => (
-            <DropZone
-              key={positionKey}
-              containerId={positionKey}
-              title={`${index + 1}位`}
-            >
-              <SortableContext
-                items={ranking[positionKey]}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-2 w-full">
-                  {ranking[positionKey].map((itemId) => {
-                    const option = allOptions.find((o) => o.id === itemId)!;
-                    return (
-                      <DraggleItem
-                        key={itemId}
-                        id={itemId}
-                        label={option.label}
-                        status={getRankingStatus(itemId)}
-                      />
-                    );
-                  })}
+            <div key={positionKey} className="flex items-center gap-4">
+              {/* Ranking Number */}
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg font-bold">
+                  {index + 1}
                 </div>
-              </SortableContext>
-            </DropZone>
+              </div>
+              
+              {/* Drop Zone */}
+              <div className="flex-1">
+                <DropZone
+                  containerId={positionKey}
+                  title=""
+                >
+                  <SortableContext
+                    items={ranking[positionKey]}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="min-h-[60px] flex items-center">
+                      {ranking[positionKey].length > 0 ? (
+                        ranking[positionKey].map((itemId) => {
+                          const option = allOptions.find((o) => o.id === itemId)!;
+                          return (
+                            <DraggleItem
+                              key={itemId}
+                              id={itemId}
+                              label={option.label}
+                              status={getRankingStatus(itemId)}
+                            />
+                          );
+                        })
+                      ) : (
+                        <div className="text-muted-foreground text-sm italic text-center w-full">
+                          ここにドラッグしてください
+                        </div>
+                      )}
+                    </div>
+                  </SortableContext>
+                </DropZone>
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -273,17 +290,19 @@ const DropZone = ({ containerId, title, children }: DropZoneProps) => {
         'border-2 border-dashed border-muted-foreground/20 rounded-2xl transition-all duration-200',
         'hover:border-muted-foreground/40',
         isOver && 'border-primary bg-primary/5',
-        isRankingPosition ? 'p-3 min-w-[200px]' : 'p-4'
+        isRankingPosition ? 'p-3' : 'p-4'
       )}
     >
-      <h3
-        className={cn(
-          'font-semibold mb-3 text-center',
-          isRankingPosition ? 'text-base' : 'text-lg'
-        )}
-      >
-        {title}
-      </h3>
+      {title && (
+        <h3
+          className={cn(
+            'font-semibold mb-3 text-center',
+            isRankingPosition ? 'text-base' : 'text-lg'
+          )}
+        >
+          {title}
+        </h3>
+      )}
       {children}
     </div>
   );
