@@ -65,17 +65,17 @@ export const RankingQuizCard = ({
 
   const score = useMemo(() => {
     let totalScore = 0;
-    
+
     // Base points: 1 point for each correct item in top 5 (regardless of position)
     const userTop5 = getRankingArray.slice(0, 5);
     const correctTop5 = correctOrder.slice(0, 5);
-    
-    userTop5.forEach(userItem => {
+
+    userTop5.forEach((userItem) => {
       if (correctTop5.includes(userItem)) {
         totalScore += 1;
       }
     });
-    
+
     // Exact match bonus points
     const exactMatchBonus = [5, 4, 3, 2, 1]; // 1st, 2nd, 3rd, 4th, 5th
     userTop5.forEach((userItem, index) => {
@@ -83,7 +83,7 @@ export const RankingQuizCard = ({
         totalScore += exactMatchBonus[index];
       }
     });
-    
+
     return totalScore;
   }, [getRankingArray, correctOrder]);
 
@@ -117,7 +117,10 @@ export const RankingQuizCard = ({
               <p className="font-medium mb-1">📊 スコアリング方式：</p>
               <ul className="space-y-1">
                 <li>• トップ5に正解が含まれている場合：各1ポイント</li>
-                <li>• 順位が完全一致の場合のボーナス：1位+5、2位+4、3位+3、4位+2、5位+1ポイント</li>
+                <li>
+                  •
+                  順位が完全一致の場合のボーナス：1位+5、2位+4、3位+3、4位+2、5位+1ポイント
+                </li>
               </ul>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
@@ -148,7 +151,7 @@ export const RankingQuizCard = ({
                 onClick={checkAnswer}
                 className="rounded-2xl cursor-pointer"
               >
-                <Check className="w-4 h-4" /> 送信
+                <Check className="w-4 h-4" /> 確定
               </Button>
             </div>
           </CardFooter>
