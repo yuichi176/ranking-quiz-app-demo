@@ -89,7 +89,7 @@ export const RankingQuizCard = ({
         <Card className="rounded-3xl shadow-lg">
           <CardHeader className="space-y-2">
             <CardTitle className="text-2xl sm:text-3xl font-bold tracking-tight">
-              ランキングクイズ：{title}
+              杉山裕一のランキングクイズ：{title}
             </CardTitle>
             <p className="text-muted-foreground">
               選択肢をドラッグして、ランキング形式で並び替えてください。
